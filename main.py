@@ -3,6 +3,8 @@ import face_recognition
 import os
 import pickle
 
+
+# load saved faces data
 if os.path.exists("faces.dat"):
     with open("faces.dat", "rb") as f:
         known_face_encodings, known_face_names = pickle.load(f)
@@ -10,17 +12,22 @@ else:
     known_face_encodings = []
     known_face_names = []
 
+#initialize webcam
 cap = cv2.VideoCapture(0)
 
+#main loop
 while True:
     ret, frame = cap.read()
     if not ret:
         break
 
+    #convert frame to rgb
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #detect faces and get encodings
     face_locations = face_recognition.face_locations(rgb_frame)
     face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
 
+    #Loop over faces
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
         matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=0.5)
         name = "Unknown"
@@ -28,7 +35,7 @@ while True:
         if True in matches:
             idx = matches.index(True)
             name = known_face_names[idx]
-        else:
+        else: #new face detected, ask for name, add to DB
             # Ask for name only once per unknown face
             cv2.imshow("camera", frame)
             cv2.waitKey(1)
@@ -40,13 +47,15 @@ while True:
             with open("faces.dat", "wb") as f:
                 pickle.dump((known_face_encodings, known_face_names), f)
 
-        # Draw box and label
+        #draw boxes and labels
         cv2.rectangle(frame, (left, top), (right, bottom), (0,255,0), 2)
         cv2.putText(frame, name, (left, top-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
 
+    #show frame and handle quit
     cv2.imshow("camera", frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
+#cleanup
 cap.release()
 cv2.destroyAllWindows()
