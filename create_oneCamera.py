@@ -41,11 +41,12 @@ def addNewUser(name, cap):
             winsound.Beep(1000, 200)
             time.sleep(1.5)
         cv2.imshow("Add New User", frame)
-        if cv2.waitKey(100) & 0xFF == ord('q'):
+        key = cv2.waitKey(100)
+        if key & 0xFF == ord('q'):
             print("[WARN] User add aborted!")
             break
     cv2.destroyWindow("Add New User")
-    if count >= 3:  # Make sure we captured enough
+    if count >= 6:
         known_face_encodings, known_face_names = load_data()
         known_face_names.append(name)
         known_face_encodings.append(encodings)

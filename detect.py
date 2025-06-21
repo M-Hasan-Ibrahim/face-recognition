@@ -27,7 +27,7 @@ def recognizeFaces(frame):
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
         name = "Unknown"
         for i, person_encodings in enumerate(known_face_encodings):
-            if len(person_encodings) == 0:  # skip if empty
+            if len(person_encodings) == 0:
                 continue
             if isinstance(person_encodings, np.ndarray) and person_encodings.ndim == 1:
                 person_encodings = [person_encodings]  # wrap in a list
