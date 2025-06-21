@@ -5,6 +5,7 @@ import face_recognition
 import pickle
 import os
 import numpy as np
+from jsonschema.exceptions import best_match
 
 DATA_FILE = "faces.dat"
 
@@ -24,16 +25,22 @@ def recognizeFaces(frame):
     face_encodings = face_recognition.face_encodings(rgb_frame, face_locations)
     names_found = []
 
+    tolerance = 0.5
+
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-        name = "Unknown"
+        best_match_name = "Unknown"
+        best_match_distance = float("inf")
         for i, person_encodings in enumerate(known_face_encodings):
             if len(person_encodings) == 0:
                 continue
             if isinstance(person_encodings, np.ndarray) and person_encodings.ndim == 1:
                 person_encodings = [person_encodings]  # wrap in a list
-            matches = face_recognition.compare_faces(person_encodings, face_encoding, tolerance=0.5)
-            if True in matches:
-                name = known_face_names[i]
-                break
-        names_found.append((top, right, bottom, left, name))
+
+            distances = face_recognition.face_distance(person_encodings, face_encoding)
+            min_distance = min(distances)
+
+            if min_distance < best_match_distance and min_distance <= tolerance:
+                best_match_distance = min_distance
+                best_match_name = known_face_names[i]
+        names_found.append((top, right, bottom, left, best_match_name))
     return names_found
