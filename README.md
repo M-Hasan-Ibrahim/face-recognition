@@ -7,4 +7,4 @@ steps to download dlib:
 choose .whl file from github
 open terminal in pycharm / vscode
 cd to Downloads
-pip install dlib .whl file name
+pip install dlib .whl file_name
