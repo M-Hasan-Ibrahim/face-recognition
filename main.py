@@ -49,7 +49,7 @@ def enroll_user_thread(cap):
     send_queue.put((message, None))
 
 def main():
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
     print("[INFO] Press 'a' to add a new user, 'q' to quit.")
 
     while True:
