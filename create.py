@@ -29,7 +29,7 @@ def addNewUser(name):
     cap = cv2.VideoCapture(0)
     count = 0
     print("[INFO] Please slowly turn your head left and right. Press 'q' to abort.")
-    while count < 10:
+    while count < 6:
         ret, frame = cap.read()
         if not ret:
             break
@@ -38,8 +38,8 @@ def addNewUser(name):
         if faces:
             encodings.append(faces[0])
             count += 1
-            print(f"[INFO] Captured {count}/10")
-            time.sleep(1.5)
+            print(f"[INFO] Captured {count}/6")
+            time.sleep(1)
             winsound.Beep(1000, 200)
         cv2.imshow("Add New User", frame)
         if cv2.waitKey(100) & 0xFF == ord('q'):

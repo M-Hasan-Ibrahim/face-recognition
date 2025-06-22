@@ -7,6 +7,7 @@ import os
 import numpy as np
 from jsonschema.exceptions import best_match
 
+
 DATA_FILE = "faces.dat"
 
 def load_data():
