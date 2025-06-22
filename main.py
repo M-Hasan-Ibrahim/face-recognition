@@ -9,6 +9,7 @@ import os
 from my_bot import MyBot
 import time
 from PIL import Image
+import queue
 
 load_dotenv()
 
@@ -22,17 +23,33 @@ name_last_sent = {}
 RESEND_DELAY = 120
 RESEND_DELAY_MODIFIED = RESEND_DELAY
 
-def send_telegram_message_thread(name, pil_image):
-    bot.send_message([name])
-    bot.send_pil_image(pil_image=pil_image)
+send_queue = queue.Queue()
+
+def telegram_sender_worker():
+    while True:
+        item = send_queue.get()
+        if item is None:
+            break
+        message, pil_image = item
+        try:
+            bot.send_message([message])
+            bot.send_pil_image(pil_image=pil_image)
+        except Exception as e:
+            print("[Telegram ERROR]", e)
+        send_queue.task_done()
+
+
+sender_thread = threading.Thread(target=telegram_sender_worker, daemon=True)
+sender_thread.start()
+
 def enroll_user_thread(cap):
     name = input("Enter name for new user: ")
     addNewUser(name, cap)
     message = "{name} has been enrolled.".format(name=name)
-    bot.send_message([message])
+    send_queue.put((message, None))
 
 def main():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     print("[INFO] Press 'a' to add a new user, 'q' to quit.")
 
     while True:
@@ -70,10 +87,7 @@ def main():
             if (name not in sent_names) or (now - name_last_sent.get(name, 0) > RESEND_DELAY_MODIFIED):
                 sent_names.add(name)
                 name_last_sent[name] = now
-                threading.Thread(
-                    target=send_telegram_message_thread,
-                    args=(message, pil_image)
-                ).start()
+                send_queue.put((message, pil_image))
 
         cv2.imshow("Face Recognition", frame)
         key = cv2.waitKey(1)
@@ -85,6 +99,9 @@ def main():
 
     cap.release()
     cv2.destroyAllWindows()
+
+    send_queue.put(None)
+    sender_thread.join()
 
 if __name__ == "__main__":
     main()

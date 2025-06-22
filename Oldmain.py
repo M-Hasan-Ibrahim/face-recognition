@@ -13,7 +13,7 @@ else:
     known_face_names = []
 
 #initialize webcam
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 print("Capturing faces...")
 
 #main loop
