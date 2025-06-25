@@ -26,7 +26,7 @@ def save_data(encodings, names):
 def addNewUser(name):
     print(f"[INFO] Adding new user: {name}")
     encodings = []
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     count = 0
     print("[INFO] Please slowly turn your head left and right. Press 'q' to abort.")
     while count < 6:

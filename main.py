@@ -6,17 +6,17 @@ from detect import recognizeFaces
 import threading
 from dotenv import load_dotenv
 import os
-from my_bot import MyBot
 import time
 from PIL import Image
 import queue
+from pi_sender import PiSender
 
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-bot = MyBot(TELEGRAM_BOT_TOKEN, CHAT_ID)
+sender = PiSender("192.168.61.11")
 
 sent_names = set()
 name_last_sent = {}
@@ -25,28 +25,31 @@ RESEND_DELAY_MODIFIED = RESEND_DELAY
 
 send_queue = queue.Queue()
 
-def telegram_sender_worker():
+def raspberryPI_sender_worker():
     while True:
         item = send_queue.get()
         if item is None:
             break
         message, pil_image = item
         try:
-            bot.send_message([message])
-            bot.send_pil_image(pil_image=pil_image)
+            result = sender.send_to_pi(pil_image, message)
         except Exception as e:
             print("[Telegram ERROR]", e)
         send_queue.task_done()
 
 
-sender_thread = threading.Thread(target=telegram_sender_worker, daemon=True)
+sender_thread = threading.Thread(target=raspberryPI_sender_worker, daemon=True)
 sender_thread.start()
 
 def enroll_user_thread(cap):
     name = input("Enter name for new user: ")
-    addNewUser(name, cap)
+    first_image = addNewUser(name, cap)
+    pil_image = None
     message = "{name} has been enrolled.".format(name=name)
-    send_queue.put((message, None))
+    if first_image is not None:
+        face_rgb = cv2.cvtColor(first_image, cv2.COLOR_BGR2RGB)
+        pil_image = Image.fromarray(face_rgb)
+    send_queue.put((message, pil_image))
 
 def main():
     cap = cv2.VideoCapture(0)
