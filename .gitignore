@@ -1,3 +1,4 @@
-./.env
-./create.py
-./testing
+.env
+create.py
+testing
+
