@@ -8,7 +8,3 @@ choose .whl file from github
 open terminal in pycharm / vscode
 cd to Downloads
 pip install dlib .whl file_name
-
-
-#.env file
-Add .env file having your telegram API and your chat ID
